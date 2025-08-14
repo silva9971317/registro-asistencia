@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Registro de Asistencia Persistente</title>
+<style>
+  body { font-family: Arial, sans-serif; margin: 20px; }
+  #menu, #tablaContainer { margin-bottom: 20px; }
+  table { border-collapse: collapse; width: 100%; max-width: 800px; margin-bottom: 10px; }
+  th, td { border: 1px solid #333; padding: 8px; text-align: center; }
+  button { padding: 5px 10px; cursor: pointer; margin: 3px; }
+  input { padding: 5px; font-size: 16px; }
+</style>
+</head>
+<body>
+
+<h2>Bienvenido al Registro de Asistencia</h2>
+
+<div id="menu">
+  <label>Nombre de la nueva plantilla: </label>
+  <input type="text" id="nombrePlantilla" placeholder="Ej: Clase 1">
+  <button onclick="crearPlantilla()">Crear Plantilla</button>
+  <h3>Plantillas Existentes:</h3>
+  <div id="listaPlantillas"></div>
+</div>
+
+<div id="tablaContainer" style="display:none;"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script>
+const nombres = [
+  "Juan Akarapi","Rubén Alaniz","Feliciano Alanoca","Ramiro Alejo","Diana Lee",
+  "Gonzalo Álvarez","Castiano Apaza","José Luis Apaza","Virginia Apaza","Wilmer Botello",
+  "Felipe Cachi","Carlos Cajuana","Ricardo Calle","Félix Caizalla","Betave Casi",
+  "Jesús Castillo","José Castillo","Elizardo Condori","Hermindo Condori","Javier Condori",
+  "Roberto Condori","Felipa Copa","Mario Cupana","Juan Chambi","Constancio Choque Cayata",
+  "Emiliano Chukimia","Verónica Fernández","Daniel Franco","Edwin González","Carlos Herrera",
+  "Abel Huanca","Abelina Huanca","Félix Huanca","Carlos Huanca","Lidia Huanca",
+  "Rosalía Huanca","Richard Juan Guarita","Valentín Guarita","Giovanni Laura","Víctor Luna",
+  "Basilio Luque","Javier Mamani","Nelson Mamani","Nora Mamani","Angélica Mamani",
+  "Juan Martínez","Renberto Ortega","Víctor Oviedo","Juan Paco","Jacinto Pari",
+  "Claudio Pocuaca","Ramiro Poma","Mario Quenta","David Quispe","Florencia Quispe",
+  "Antonia Quispe","Segundino Quispe","Eloy Ramírez","Jaime Ramos","María Ramos",
+  "Walter Rodríguez","Freddy Salas","Alain Salgueiro","David Serrano","Jhon Silva",
+  "Ángel Silva","René Ticona","Nel Batito","Sul Matito","Casiano Tola",
+  "Elisa Tola","Valerio Turpo","Eddy Valeriano","Freddy Vargas","Carlos Vargas",
+  "Eduardo Velázquez","Javier Ventura","Estepa Vera","Robert Vergara","Carmen Villarreal"
+];
+
+let plantillaCount = localStorage.getItem('plantillaCount') || 0;
+
+// Mostrar lista de plantillas
+function mostrarListaPlantillas() {
+  const lista = document.getElementById('listaPlantillas');
+  lista.innerHTML = '';
+  for (let i = 1; i <= plantillaCount; i++) {
+    const nombre = localStorage.getItem('plantilla_' + i);
+    if(nombre){
+      const btn = document.createElement('button');
+      btn.textContent = nombre;
+      btn.onclick = () => abrirPlantilla(i);
+      lista.appendChild(btn);
+    }
+  }
+}
+
+function crearPlantilla() {
+  const nombre = document.getElementById("nombrePlantilla").value.trim();
+  if (!nombre) { alert("Ingrese un nombre para la plantilla"); return; }
+  plantillaCount++;
+  localStorage.setItem('plantillaCount', plantillaCount);
+  localStorage.setItem('plantilla_' + plantillaCount, nombre);
+  // Inicializamos el estado de asistencia de los 80 nombres
+  const estados = Array(nombres.length*2).fill("Asistencia");
+  localStorage.setItem('plantilla_estado_' + plantillaCount, JSON.stringify(estados));
+  document.getElementById("nombrePlantilla").value = '';
+  mostrarListaPlantillas();
+  abrirPlantilla(plantillaCount);
+}
+
+function abrirPlantilla(id) {
+  const nombre = localStorage.getItem('plantilla_' + id);
+  const container = document.getElementById('tablaContainer');
+  container.style.display = 'block';
+  container.innerHTML = `<button onclick="volverMenu()">Volver al Menú</button><h3>${nombre}</h3>`;
+
+  const estados = JSON.parse(localStorage.getItem('plantilla_estado_' + id));
+  let html = '<table id="tablaAsistencia">';
+  html += '<tr><th>Nombre</th><th>Asistencia 1</th><th>Asistencia 2</th></tr>';
+
+  for (let i = 0; i < nombres.length; i++) {
+    const estado1 = estados[i*2];
+    const estado2 = estados[i*2 + 1];
+    html += `<tr>
+      <td>${nombres[i]}</td>
+      <td><button onclick="toggleAsistencia(this, ${id}, ${i*2})">${estado1}</button></td>
+      <td><button onclick="toggleAsistencia(this, ${id}, ${i*2 + 1})">${estado2}</button></td>
+    </tr>`;
+  }
+  html += '</table>';
+  html += `<button onclick="descargarImagen('tablaAsistencia')">Guardar como imagen</button>`;
+  container.innerHTML += html;
+
+  document.getElementById('menu').style.display = 'none';
+}
+
+function volverMenu() {
+  document.getElementById('tablaContainer').style.display = 'none';
+  document.getElementById('menu').style.display = 'block';
+}
+
+function toggleAsistencia(btn, plantillaId, indice) {
+  const estados = JSON.parse(localStorage.getItem('plantilla_estado_' + plantillaId));
+  estados[indice] = estados[indice] === "Asistencia" ? "Falta" : "Asistencia";
+  localStorage.setItem('plantilla_estado_' + plantillaId, JSON.stringify(estados));
+  btn.textContent = estados[indice];
+}
+
+function descargarImagen(tablaId) {
+  const tabla = document.getElementById(tablaId);
+  html2canvas(tabla).then(canvas => {
+    const link = document.createElement('a');
+    link.download = tablaId + '.png';
+    link.href = canvas.toDataURL();
+    link.click();
+  });
+}
+
+// Inicializar
+mostrarListaPlantillas();
+</script>
+
+</body>
+</html>

@@ -34,8 +34,8 @@ const nombres = [
   "Gonzalo Alvarez","Casiano Apaza","Jose Luis Apaza","Virginia Apaza","Wilmer Botello",
   "Felipe Cachi","Carlos Cahuana","Ricardo Calle","Felix Callizaya","Bethabe Casi",
   "Jesus Castillo","Jose Castillo","Elizardo Condori","Ermindo Condori","Javier Condori",
-  "Roberto Condori","Felipa Copa","Mario Copana","Juan Chambi","Constancio Choquecallata",
-  "Emiliano Chuquimia","Veronica Fernandez","Daniel Franco","Edwin Gonzalez","Carlos Herrera",
+  "Roberto Condori","Felipe Copa","Mario Copana","Juan Chambi","Constancio Choquecallata",
+  "Emiliana Chuquimia","Veronica Fernandez","Daniel Franco","Edwin Gonzalez","Carlos Herrera",
   "Abel Huanca","Avelina Huanca","Feliza Huanca","Carlos Huanca","Lidia Huanca",
   "Rosalia Huanca","Richard Huarita","Valentin Huarita","Giovani Laura","Victor Luna",
   "Basilio Luque","Javier Mamani","Nelson Mamani","Nora Mamani","Angelica Mamani",
@@ -50,7 +50,6 @@ const nombres = [
 
 let plantillaCount = localStorage.getItem('plantillaCount') || 0;
 
-// Mostrar lista de plantillas con botón de eliminar
 function mostrarListaPlantillas() {
   const lista = document.getElementById('listaPlantillas');
   lista.innerHTML = '';
@@ -70,7 +69,7 @@ function mostrarListaPlantillas() {
       eliminarBtn.style.color = 'white';
       eliminarBtn.style.marginLeft = '5px';
       eliminarBtn.onclick = (e) => {
-        e.stopPropagation(); // Evita que abra la plantilla al dar click en eliminar
+        e.stopPropagation();
         eliminarPlantilla(i);
       };
 
@@ -81,7 +80,6 @@ function mostrarListaPlantillas() {
   }
 }
 
-// Función para eliminar plantilla
 function eliminarPlantilla(id) {
   if (confirm('¿Deseas eliminar esta plantilla?')) {
     localStorage.removeItem('plantilla_' + id);
@@ -96,8 +94,8 @@ function crearPlantilla() {
   plantillaCount++;
   localStorage.setItem('plantillaCount', plantillaCount);
   localStorage.setItem('plantilla_' + plantillaCount, nombre);
-  // Inicializamos el estado de asistencia de los 80 nombres
-  const estados = Array(nombres.length*2).fill("Asistencia");
+  // Inicializamos el estado de asistencia de los 80 nombres como "Falta"
+  const estados = Array(nombres.length*2).fill("Falta");
   localStorage.setItem('plantilla_estado_' + plantillaCount, JSON.stringify(estados));
   document.getElementById("nombrePlantilla").value = '';
   mostrarListaPlantillas();
@@ -112,7 +110,7 @@ function abrirPlantilla(id) {
 
   const estados = JSON.parse(localStorage.getItem('plantilla_estado_' + id));
   let html = '<table id="tablaAsistencia">';
-  html += '<tr><th>Nombre</th><th>Asistencia 1</th><th>Asistencia 2</th></tr>';
+  html += '<tr><th>Nombre</th><th>Entrada</th><th>Salida</th></tr>';
 
   for (let i = 0; i < nombres.length; i++) {
     const estado1 = estados[i*2];
@@ -137,7 +135,7 @@ function volverMenu() {
 
 function toggleAsistencia(btn, plantillaId, indice) {
   const estados = JSON.parse(localStorage.getItem('plantilla_estado_' + plantillaId));
-  estados[indice] = estados[indice] === "Asistencia" ? "Falta" : "Asistencia";
+  estados[indice] = estados[indice] === "Falta" ? "Presente" : "Falta";
   localStorage.setItem('plantilla_estado_' + plantillaId, JSON.stringify(estados));
   btn.textContent = estados[indice];
 }
@@ -152,7 +150,6 @@ function descargarImagen(tablaId) {
   });
 }
 
-// Inicializar
 mostrarListaPlantillas();
 </script>
 
